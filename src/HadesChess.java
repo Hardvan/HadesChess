@@ -112,6 +112,7 @@ public class HadesChess {
                     chessBoard[r+temp*j][c] = oldPiece;
                 }
             } catch (Exception e) {}
+            temp = 1;
         }
         return list;
     }
