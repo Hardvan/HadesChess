@@ -14,6 +14,7 @@ public class HadesChess {
             {"P","P","P","P","P","P","P","P"},
             {"R","K","B","Q","A","B","K","R"}};
     static int kingPositionC, kingPositionL;
+    static int globalDepth = 4;
     public static void main(String[] args) {
         while(!"A".equals(chessBoard[kingPositionC/8][kingPositionC%8])) {kingPositionC++;}
         while(!"a".equals(chessBoard[kingPositionL/8][kingPositionL%8])) {kingPositionL++;}
@@ -45,6 +46,56 @@ public class HadesChess {
             System.out.println(Arrays.toString(chessBoard[i]));
         }
     }
+
+    public static String alphaBeta(int depth, int beta, int alpha, String move, int player) {
+        // return in the form of 1234b#############
+        String list = posibleMoves();
+        if(depth == 0 || list.length() == 0) {
+            return move+(rating()*(player*2-1));
+        }
+        //sort later
+        player = 1-player; //either 1 or 0
+        for(int i = 0; i < list.length(); i+=5){
+            makeMove(list.substring(i,i+5));
+            flipBoard();
+            String returnString = alphaBeta(depth-1, beta, alpha, list.substring(i,i+5), player);
+            int value = Integer.valueOf(returnString.substring(5));
+            flipBoard();
+            undoMove(list.substring(i,i+5));
+            if(player == 0){
+                if(value <= beta) {
+                    beta = value;
+                    if(depth == globalDepth){
+                        move = returnString.substring(0,5);
+                    }
+                }
+            } else {
+                if(value>alpha) {
+                    alpha = value;
+                    if(depth == globalDepth){
+                        move = returnString.substring(0,5);
+                    }
+                }
+            }
+            if(alpha >= beta){
+                if(player == 0){
+                    return move+beta;
+                } else {
+                    return move+alpha;
+                }
+            }
+        }
+        if(player == 0){
+            return move+beta;
+        } else {
+            return move+alpha;
+        }
+    }
+
+    public static void flipBoard(){
+
+    }
+
 
     public static void makeMove(String move){
         if (move.charAt(4) != 'P'){
@@ -353,6 +404,10 @@ public class HadesChess {
         }
         //need to add casting later
         return list;
+    }
+
+    public static int rating() {
+        return 0;
     }
     public static boolean kingSafe() {
         //bishop/queen
