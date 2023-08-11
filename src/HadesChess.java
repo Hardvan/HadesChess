@@ -2,7 +2,7 @@ import com.sun.source.tree.TryTree;
 
 import java.util.*;
 
-//import javax.swing.*;
+import javax.swing.*;
 public class HadesChess {
     static String chessBoard[][]={
             {"r","k","b","q","a","b","k","r"},
@@ -33,15 +33,16 @@ public class HadesChess {
          * (1234b represents row1,column2 moves to row3, column4 which captured
          * b (a space represents no capture))
          */
-        /*JFrame f=new JFrame("Chess Tutorial");
+        JFrame f=new JFrame("Hades Chess");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         UserInterface ui=new UserInterface();
         f.add(ui);
         f.setSize(500, 500);
-        f.setVisible(true);*/
+        f.setVisible(true);
         makeMove("6555 ");
         undoMove("6555 ");
         System.out.println(posibleMoves());
+        makeMove(alphaBeta(globalDepth, 1000000, -1000000, "", 0));
         for(int i=0;i<8;i++){
             System.out.println(Arrays.toString(chessBoard[i]));
         }
@@ -93,6 +94,24 @@ public class HadesChess {
     }
 
     public static void flipBoard(){
+        String temp;
+        for(int i = 0; i<32; i++){
+            int r = i/8,c = i%8;
+            if (Character.isUpperCase(chessBoard[r][c].charAt(0))){
+                temp = chessBoard[r][c].toLowerCase();
+            } else {
+                temp = chessBoard[r][c].toUpperCase();
+            }
+            if (Character.isUpperCase(chessBoard[7-r][7-c].charAt(0))){
+                chessBoard[r][c] = chessBoard[7-r][7-c].toLowerCase();
+            } else {
+                chessBoard[r][c] = chessBoard[7-r][7-c].toUpperCase();
+            }
+            chessBoard[7-r][7-c] = temp;
+        }
+        int kingTemp = kingPositionC;
+        kingPositionC = 63-kingPositionL;
+        kingPositionL = 63-kingTemp;
 
     }
 
@@ -102,6 +121,9 @@ public class HadesChess {
             //x1,y1,x2,y2,captured piece
             chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))] = chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))];
             chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))] = " ";
+            if("A".equals(chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))])) {
+                kingPositionC = 8*Character.getNumericValue(move.charAt(2)) + Character.getNumericValue(move.charAt(3));
+            }
         } else { //if pawn promotion
             //column1,column2,captured-piece,new-piece,P
             chessBoard[1][Character.getNumericValue(move.charAt(0))] = " ";
@@ -114,6 +136,9 @@ public class HadesChess {
             //x1,y1,x2,y2,captured piece
             chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))] = chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))];
             chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))] = String.valueOf(move.charAt(4));
+            if("A".equals(chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))])) {
+                kingPositionC = 8*Character.getNumericValue(move.charAt(0)) + Character.getNumericValue(move.charAt(1));
+            }
         } else { //if pawn promotion
             //column1,column2,captured-piece,new-piece,P
             chessBoard[1][Character.getNumericValue(move.charAt(0))] = "P";
