@@ -115,20 +115,28 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (e.getX() < 8 * squareSize && e.getY() < 8 * squareSize) {
-            //if inside the board
-            mouseX = e.getX();
-            mouseY = e.getY();
+        int xOffset = (getWidth() - 8 * squareSize) / 2;
+        int yOffset = (getHeight() - 8 * squareSize) / 2;
+
+        // if inside the board
+        if (e.getX() < 8 * squareSize + xOffset && e.getY() < 8 * squareSize + yOffset) {
+
+            mouseX = e.getX() - xOffset;
+            mouseY = e.getY() - yOffset;
             repaint();
         }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (e.getX() < 8 * squareSize && e.getY() < 8 * squareSize) {
-            //if inside the board
-            newMouseX = e.getX();
-            newMouseY = e.getY();
+        int xOffset = (getWidth() - 8 * squareSize) / 2;
+        int yOffset = (getHeight() - 8 * squareSize) / 2;
+
+        // if inside the board
+        if (e.getX() < 8 * squareSize + xOffset && e.getY() < 8 * squareSize + yOffset) {
+
+            newMouseX = e.getX() - xOffset;
+            newMouseY = e.getY() - yOffset;
             if (e.getButton() == MouseEvent.BUTTON1) {
                 String dragMove;
                 if (newMouseY / squareSize == 0 && mouseY / squareSize == 1 && "P".equals(HadesChess.chessBoard[mouseY / squareSize][mouseX / squareSize])) {
