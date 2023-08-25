@@ -67,13 +67,13 @@ public class Rating {
         int counter = 0, material = rateMaterial();
         counter += rateAttack();
         counter += material;
-        counter += rateMoveablitly(list, depth, material);
+        counter += rateMovablitly(list, depth, material);
         counter += ratePositional(material);
         HadesChess.flipBoard();
         material = rateMaterial();
         counter -= rateAttack();
         counter -= material;
-        counter -= rateMoveablitly(list, depth, material);
+        counter -= rateMovablitly(list, depth, material);
         counter -= ratePositional(material);
         HadesChess.flipBoard();
         return -(counter + depth * 50);
@@ -98,14 +98,7 @@ public class Rating {
                     }
                 }
                 break;
-                case "K": {
-                    HadesChess.kingPositionC = i;
-                    if (!HadesChess.kingSafe()) {
-                        counter -= 300;
-                    }
-                }
-                break;
-                case "B": {
+                case "K", "B": {
                     HadesChess.kingPositionC = i;
                     if (!HadesChess.kingSafe()) {
                         counter -= 300;
@@ -159,7 +152,7 @@ public class Rating {
         return counter;
     }
 
-    public static int rateMoveablitly(int listLength, int depth, int material) {
+    public static int rateMovablitly(int listLength, int depth, int material) {
         int counter = 0;
         counter += listLength;//5 pointer per valid move
         if (listLength == 0) {//current side is in checkmate or stalemate
@@ -202,6 +195,7 @@ public class Rating {
                     break;
             }
         }
+
         return counter;
     }
 }
