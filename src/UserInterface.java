@@ -9,14 +9,31 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        this.setBackground(Color.yellow);
+
+        // Background color
+        Color backgroundColor = new Color(240, 230, 200);
+        this.setBackground(backgroundColor);
+
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
+
+        // Calculate the centering offset for x and y axes
+        int xOffset = (getWidth() - 8 * squareSize) / 2;
+        int yOffset = (getHeight() - 8 * squareSize) / 2;
+
+        // Draw the chess board
         for (int i = 0; i < 64; i += 2) {
+            // For the first square
+            int x = (i % 8 + (i / 8) % 2) * squareSize + xOffset;
+            int y = (i / 8) * squareSize + yOffset;
             g.setColor(new Color(255, 200, 100));
-            g.fillRect((i % 8 + (i / 8) % 2) * squareSize, (i / 8) * squareSize, squareSize, squareSize);
+            g.fillRect(x, y, squareSize, squareSize);
+
+            // For the second square
+            int x2 = ((i + 1) % 8 - ((i + 1) / 8) % 2) * squareSize + xOffset;
+            int y2 = ((i + 1) / 8) * squareSize + yOffset;
             g.setColor(new Color(150, 50, 30));
-            g.fillRect(((i + 1) % 8 - ((i + 1) / 8) % 2) * squareSize, ((i + 1) / 8) * squareSize, squareSize, squareSize);
+            g.fillRect(x2, y2, squareSize, squareSize);
         }
         Image chessPiecesImage;
         chessPiecesImage = new ImageIcon("ChessPieces.png").getImage();
@@ -72,8 +89,16 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
                     k = 1;
                     break;
             }
+
             if (j != -1 && k != -1) {
-                g.drawImage(chessPiecesImage, (i % 8) * squareSize, (i / 8) * squareSize, (i % 8 + 1) * squareSize, (i / 8 + 1) * squareSize, j * 64, k * 64, (j + 1) * 64, (k + 1) * 64, this);
+                // Apply the xOffset and yOffset to the coordinates
+                int x = (i % 8) * squareSize + xOffset;
+                int y = (i / 8) * squareSize + yOffset;
+
+                // Draw the chess piece
+                g.drawImage(chessPiecesImage, x, y, x + squareSize, y + squareSize,
+                        j * 64, k * 64,
+                        (j + 1) * 64, (k + 1) * 64, this);
             }
         }
         /*g.setColor(Color.BLUE);

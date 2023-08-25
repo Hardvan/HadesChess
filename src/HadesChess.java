@@ -51,6 +51,7 @@ public class HadesChess {
         UserInterface ui = new UserInterface();
         frame.add(ui);
         frame.setSize(1000, 1000); // 1000x1000 pixel window
+        frame.setLocationRelativeTo(null); // center the window
         frame.setVisible(true); // show the window
 
         System.out.println(sortMoves(possibleMoves())); // print out the possible moves
