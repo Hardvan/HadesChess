@@ -108,13 +108,13 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
                 String dragMove;
                 if (newMouseY / squareSize == 0 && mouseY / squareSize == 1 && "P".equals(HadesChess.chessBoard[mouseY / squareSize][mouseX / squareSize])) {
                     //pawn promotion
-                    dragMove = "" + mouseX / squareSize + newMouseX / squareSize + HadesChess.chessBoard[newMouseY / squareSize][newMouseX / squareSize] + "QP";
+                    dragMove = String.valueOf(mouseX / squareSize) + newMouseX / squareSize + HadesChess.chessBoard[newMouseY / squareSize][newMouseX / squareSize] + "QP";
                 } else {
                     //regular move
-                    dragMove = "" + mouseY / squareSize + mouseX / squareSize + newMouseY / squareSize + newMouseX / squareSize + HadesChess.chessBoard[newMouseY / squareSize][newMouseX / squareSize];
+                    dragMove = String.valueOf(mouseY / squareSize) + mouseX / squareSize + newMouseY / squareSize + newMouseX / squareSize + HadesChess.chessBoard[newMouseY / squareSize][newMouseX / squareSize];
                 }
-                String userPosibilities = HadesChess.posibleMoves();
-                if (userPosibilities.replaceAll(dragMove, "").length() < userPosibilities.length()) {
+                String userPossibilities = HadesChess.possibleMoves();
+                if (userPossibilities.replaceAll(dragMove, "").length() < userPossibilities.length()) {
                     //if valid move
                     HadesChess.makeMove(dragMove);
                     HadesChess.flipBoard();

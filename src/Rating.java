@@ -194,10 +194,10 @@ public class Rating {
                 case "A":
                     if (material >= 1750) {
                         counter += kingMidBoard[i / 8][i % 8];
-                        counter += HadesChess.posibleA(HadesChess.kingPositionC).length() * 10;
+                        counter += HadesChess.possibleA(HadesChess.kingPositionC).length() * 10;
                     } else {
                         counter += kingEndBoard[i / 8][i % 8];
-                        counter += HadesChess.posibleA(HadesChess.kingPositionC).length() * 30;
+                        counter += HadesChess.possibleA(HadesChess.kingPositionC).length() * 30;
                     }
                     break;
             }

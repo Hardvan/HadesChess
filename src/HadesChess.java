@@ -1,7 +1,25 @@
 import java.util.*;
 import javax.swing.*;
 
+/*
+ * Naming convention:
+ * PIECE = WHITE/black
+ * pawn = P/p
+ * Knight (horse) = K/k
+ * bishop = B/b
+ * Rook (castle) = R/r
+ * Queen = Q/q
+ * King = A/a
+
+ * Strategy: Create an alpha-beta tree diagram which returns the best outcome
+
+ * (1234b represents row1, column2 moves to row3, column4 which captured
+ * b (a space represents no capture))
+ */
+
 public class HadesChess {
+
+    // 2D array of Strings representing the chess board
     static String[][] chessBoard = {
             {"r", "k", "b", "q", "a", "b", "k", "r"},
             {"p", "p", "p", "p", "p", "p", "p", "p"},
@@ -11,80 +29,98 @@ public class HadesChess {
             {" ", " ", " ", " ", " ", " ", " ", " "},
             {"P", "P", "P", "P", "P", "P", "P", "P"},
             {"R", "K", "B", "Q", "A", "B", "K", "R"}};
+
+    // Location of the kings (C = computer, L = human)
     static int kingPositionC, kingPositionL;
-    static int humanAsWhite = -1;//1=human as white, 0=human as black
-    static int globalDepth = 4;
+    static int humanAsWhite = -1; // 1 = human as white, 0 = human as black
+    static int globalDepth = 4; // depth of the alpha-beta tree
 
     public static void main(String[] args) {
+        // Get King's location
         while (!"A".equals(chessBoard[kingPositionC / 8][kingPositionC % 8])) {
             kingPositionC++;
-        }//get King's location
+        }
+        // Get King's location
         while (!"a".equals(chessBoard[kingPositionL / 8][kingPositionL % 8])) {
             kingPositionL++;
-        }//get king's location
-        /*
-         * PIECE=WHITE/black
-         * pawn=P/p
-         * kinght (horse)=K/k
-         * bishop=B/b
-         * rook (castle)=R/r
-         * Queen=Q/q
-         * King=A/a
-         *
-         * My strategy is to create an alpha-beta tree diagram wich returns
-         * the best outcome
-         *
-         * (1234b represents row1,column2 moves to row3, column4 which captured
-         * b (a space represents no capture))
-         */
-        JFrame f = new JFrame("Chess Tutorial");
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        }
+
+        // Create the GUI window
+        JFrame frame = new JFrame("Chess Tutorial");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         UserInterface ui = new UserInterface();
-        f.add(ui);
-        f.setSize(1000, 1000);
-        f.setVisible(true);
-        System.out.println(sortMoves(posibleMoves()));
-        Object[] option = {"Computer", "Human"};
-        humanAsWhite = JOptionPane.showOptionDialog(null, "Who should play as white?", "ABC Options", JOptionPane.YES_NO_OPTION,
+        frame.add(ui);
+        frame.setSize(1000, 1000); // 1000x1000 pixel window
+        frame.setVisible(true); // show the window
+
+        System.out.println(sortMoves(possibleMoves())); // print out the possible moves
+
+        // Ask the user if they want to play as white or black
+        Object[] option = {"Computer", "Human"}; // options for the JOptionPane
+        humanAsWhite = JOptionPane.showOptionDialog(null, "Who should play as white?",
+                "ABC Options", JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, option, option[1]);
+        // If the user chooses to play as black, make the first move
         if (humanAsWhite == 0) {
-            long startTime = System.currentTimeMillis();
+            long startTime = System.currentTimeMillis(); // start the timer
+
+            // Make the move by calling the alphaBeta function
             makeMove(alphaBeta(globalDepth, 1000000, -1000000, "", 0));
-            long endTime = System.currentTimeMillis();
-            System.out.println("That took " + (endTime - startTime) + " milliseconds");
+
+            long endTime = System.currentTimeMillis(); // end the timer
+            System.out.println("That took " + (endTime - startTime) + " milliseconds"); // print out the time it took
+
+            // Flip the board and repaint the GUI
             flipBoard();
-            f.repaint();
+            frame.repaint();
         }
         makeMove("7655 ");
         undoMove("7655 ");
+
+        // Print out the chess board to the console
         for (int i = 0; i < 8; i++) {
             System.out.println(Arrays.toString(chessBoard[i]));
         }
     }
 
     public static String alphaBeta(int depth, int beta, int alpha, String move, int player) {
-        //return in the form of 1234b##########
-        String list = posibleMoves();
+
+        // Return in the form of 1234b##########
+
+        String list = possibleMoves(); // get the list of possible moves
+
+        // If no moves are possible or the depth is 0, return the move and the rating
         if (depth == 0 || list.length() == 0) {
             return move + (Rating.rating(list.length(), depth) * (player * 2 - 1));
         }
-        list = sortMoves(list);
-        player = 1 - player;//either 1 or 0
+
+        list = sortMoves(list); // sort the moves
+        player = 1 - player; // either 1 or 0
+
+        // Loop through the list of moves
         for (int i = 0; i < list.length(); i += 5) {
-            makeMove(list.substring(i, i + 5));
+            makeMove(list.substring(i, i + 5)); // make the move
             flipBoard();
+
+            // Recursively call the alphaBeta function to get the rating
             String returnString = alphaBeta(depth - 1, beta, alpha, list.substring(i, i + 5), player);
-            int value = Integer.valueOf(returnString.substring(5));
+            int value = Integer.valueOf(returnString.substring(5)); // get the rating
+
             flipBoard();
-            undoMove(list.substring(i, i + 5));
+            undoMove(list.substring(i, i + 5)); // undo the move
+
+            // If the rating is less than beta, set beta to the rating
             if (player == 0) {
                 if (value <= beta) {
                     beta = value;
+                    // If the depth is the global depth, set the move to the move
                     if (depth == globalDepth) {
                         move = returnString.substring(0, 5);
                     }
                 }
-            } else {
+            }
+            // If the rating is greater than alpha, set alpha to the rating
+            else {
                 if (value > alpha) {
                     alpha = value;
                     if (depth == globalDepth) {
@@ -92,6 +128,7 @@ public class HadesChess {
                     }
                 }
             }
+            // If alpha is greater than or equal to beta, return the move and the rating
             if (alpha >= beta) {
                 if (player == 0) {
                     return move + beta;
@@ -100,6 +137,7 @@ public class HadesChess {
                 }
             }
         }
+        // Return the move and the rating
         if (player == 0) {
             return move + beta;
         } else {
@@ -109,13 +147,16 @@ public class HadesChess {
 
     public static void flipBoard() {
         String temp;
+        // Loop through the chess board
         for (int i = 0; i < 32; i++) {
             int r = i / 8, c = i % 8;
+            // Turn uppercase to lowercase and vice versa
             if (Character.isUpperCase(chessBoard[r][c].charAt(0))) {
                 temp = chessBoard[r][c].toLowerCase();
             } else {
                 temp = chessBoard[r][c].toUpperCase();
             }
+            // Swap the pieces
             if (Character.isUpperCase(chessBoard[7 - r][7 - c].charAt(0))) {
                 chessBoard[r][c] = chessBoard[7 - r][7 - c].toLowerCase();
             } else {
@@ -123,12 +164,15 @@ public class HadesChess {
             }
             chessBoard[7 - r][7 - c] = temp;
         }
+
+        // Swap the king positions
         int kingTemp = kingPositionC;
         kingPositionC = 63 - kingPositionL;
         kingPositionL = 63 - kingTemp;
     }
 
     public static void makeMove(String move) {
+
         if (move.charAt(4) != 'P') {
             chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))] = chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))];
             chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))] = " ";
@@ -136,7 +180,7 @@ public class HadesChess {
                 kingPositionC = 8 * Character.getNumericValue(move.charAt(2)) + Character.getNumericValue(move.charAt(3));
             }
         } else {
-            //if pawn promotion
+            // if pawn promotion
             chessBoard[1][Character.getNumericValue(move.charAt(0))] = " ";
             chessBoard[0][Character.getNumericValue(move.charAt(1))] = String.valueOf(move.charAt(3));
         }
@@ -150,42 +194,47 @@ public class HadesChess {
                 kingPositionC = 8 * Character.getNumericValue(move.charAt(0)) + Character.getNumericValue(move.charAt(1));
             }
         } else {
-            //if pawn promotion
+            // if pawn promotion
             chessBoard[1][Character.getNumericValue(move.charAt(0))] = "P";
             chessBoard[0][Character.getNumericValue(move.charAt(1))] = String.valueOf(move.charAt(2));
         }
     }
 
-    public static String posibleMoves() {
-        String list = "";
+    public static String possibleMoves() {
+        StringBuilder list = new StringBuilder();
+
+        // Loop through the chess board
         for (int i = 0; i < 64; i++) {
+            // Switch statement for each piece
             switch (chessBoard[i / 8][i % 8]) {
                 case "P":
-                    list += posibleP(i);
+                    list.append(possibleP(i));
                     break;
                 case "R":
-                    list += posibleR(i);
+                    list.append(possibleR(i));
                     break;
                 case "K":
-                    list += posibleK(i);
+                    list.append(possibleK(i));
                     break;
                 case "B":
-                    list += posibleB(i);
+                    list.append(possibleB(i));
                     break;
                 case "Q":
-                    list += posibleQ(i);
+                    list.append(possibleQ(i));
                     break;
                 case "A":
-                    list += posibleA(i);
+                    list.append(possibleA(i));
                     break;
             }
         }
-        return list;//x1,y1,x2,y2,captured piece
+
+        return list.toString(); // x1,y1,x2,y2,captured piece
     }
 
-    public static String posibleP(int i) {
+    public static String possibleP(int i) {
         String list = "", oldPiece;
-        int r = i / 8, c = i % 8;
+        int r = i / 8, c = i % 8; // row and column
+        // Loop through the possible captures
         for (int j = -1; j <= 1; j += 2) {
             try {//capture
                 if (Character.isLowerCase(chessBoard[r - 1][c + j].charAt(0)) && i >= 16) {
@@ -264,7 +313,7 @@ public class HadesChess {
         return list;
     }
 
-    public static String posibleR(int i) {
+    public static String possibleR(int i) {
         String list = "", oldPiece;
         int r = i / 8, c = i % 8;
         int temp = 1;
@@ -323,7 +372,7 @@ public class HadesChess {
         return list;
     }
 
-    public static String posibleK(int i) {
+    public static String possibleK(int i) {
         String list = "", oldPiece;
         int r = i / 8, c = i % 8;
         for (int j = -1; j <= 1; j += 2) {
@@ -357,7 +406,7 @@ public class HadesChess {
         return list;
     }
 
-    public static String posibleB(int i) {
+    public static String possibleB(int i) {
         String list = "", oldPiece;
         int r = i / 8, c = i % 8;
         int temp = 1;
@@ -393,7 +442,7 @@ public class HadesChess {
         return list;
     }
 
-    public static String posibleQ(int i) {
+    public static String possibleQ(int i) {
         String list = "", oldPiece;
         int r = i / 8, c = i % 8;
         int temp = 1;
@@ -431,7 +480,7 @@ public class HadesChess {
         return list;
     }
 
-    public static String posibleA(int i) {
+    public static String possibleA(int i) {
         String list = "", oldPiece;
         int r = i / 8, c = i % 8;
         for (int j = 0; j < 9; j++) {
@@ -458,6 +507,7 @@ public class HadesChess {
         return list;
     }
 
+    // Sort the moves by rating in descending order
     public static String sortMoves(String list) {
         int[] score = new int[list.length() / 5];
         for (int i = 0; i < list.length(); i += 5) {
@@ -465,6 +515,7 @@ public class HadesChess {
             score[i / 5] = -Rating.rating(-1, 0);
             undoMove(list.substring(i, i + 5));
         }
+
         String newListA = "", newListB = list;
         for (int i = 0; i < Math.min(6, list.length() / 5); i++) {//first few moves only
             int max = -1000000, maxLocation = 0;
@@ -478,9 +529,11 @@ public class HadesChess {
             newListA += list.substring(maxLocation * 5, maxLocation * 5 + 5);
             newListB = newListB.replace(list.substring(maxLocation * 5, maxLocation * 5 + 5), "");
         }
+
         return newListA + newListB;
     }
 
+    // Check if the king is safe
     public static boolean kingSafe() {
         //bishop/queen
         int temp = 1;
@@ -569,6 +622,7 @@ public class HadesChess {
                 }
             }
         }
+
         return true;
     }
 }
