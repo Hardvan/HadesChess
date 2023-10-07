@@ -204,34 +204,39 @@ public class HadesChess {
     }
 
     public static String possibleMoves() {
-        StringBuilder list = new StringBuilder();
+        ArrayList<String> list = new ArrayList<String>(); // ArrayList Collections framework
 
         // Loop through the chess board
         for (int i = 0; i < 64; i++) {
             // Switch statement for each piece
             switch (chessBoard[i / 8][i % 8]) {
                 case "P":
-                    list.append(possibleP(i));
+                    list.add(possibleP(i));
                     break;
                 case "R":
-                    list.append(possibleR(i));
+                    list.add(possibleR(i));
                     break;
                 case "K":
-                    list.append(possibleK(i));
+                    list.add(possibleK(i));
                     break;
                 case "B":
-                    list.append(possibleB(i));
+                    list.add(possibleB(i));
                     break;
                 case "Q":
-                    list.append(possibleQ(i));
+                    list.add(possibleQ(i));
                     break;
                 case "A":
-                    list.append(possibleA(i));
+                    list.add(possibleA(i));
                     break;
             }
         }
 
-        return list.toString(); // x1,y1,x2,y2,captured piece
+        String listString = "";
+        for (String s : list) {
+            listString += s;
+        }
+
+        return listString; // x1,y1,x2,y2,captured piece
     }
 
     public static String possibleP(int i) {
