@@ -46,7 +46,7 @@ public class HadesChess {
         }
 
         // Create the GUI window
-        JFrame frame = new JFrame("Chess Tutorial");
+        JFrame frame = new JFrame("Hades Chess");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         UserInterface ui = new UserInterface();
         frame.add(ui);
