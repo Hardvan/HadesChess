@@ -157,14 +157,7 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
             newMouseX = e.getX() - xOffset;
             newMouseY = e.getY() - yOffset;
             if (e.getButton() == MouseEvent.BUTTON1) {
-                String dragMove;
-                if (newMouseY / squareSize == 0 && mouseY / squareSize == 1 && "P".equals(HadesChess.chessBoard[mouseY / squareSize][mouseX / squareSize])) {
-                    //pawn promotion
-                    dragMove = String.valueOf(mouseX / squareSize) + newMouseX / squareSize + HadesChess.chessBoard[newMouseY / squareSize][newMouseX / squareSize] + "QP";
-                } else {
-                    //regular move
-                    dragMove = String.valueOf(mouseY / squareSize) + mouseX / squareSize + newMouseY / squareSize + newMouseX / squareSize + HadesChess.chessBoard[newMouseY / squareSize][newMouseX / squareSize];
-                }
+                String dragMove = getDragMove();
                 String userPossibilities = HadesChess.possibleMoves();
                 if (userPossibilities.replaceAll(dragMove, "").length() < userPossibilities.length()) {
                     //if valid move
@@ -176,6 +169,19 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
                 }
             }
         }
+    }
+
+    private static String getDragMove() {
+        String dragMove;
+        if (newMouseY / squareSize == 0 && mouseY / squareSize == 1 &&
+                "P".equals(HadesChess.chessBoard[mouseY / squareSize][mouseX / squareSize])) {
+            //pawn promotion
+            dragMove = String.valueOf(mouseX / squareSize) + newMouseX / squareSize + HadesChess.chessBoard[newMouseY / squareSize][newMouseX / squareSize] + "QP";
+        } else {
+            //regular move
+            dragMove = String.valueOf(mouseY / squareSize) + mouseX / squareSize + newMouseY / squareSize + newMouseX / squareSize + HadesChess.chessBoard[newMouseY / squareSize][newMouseX / squareSize];
+        }
+        return dragMove;
     }
 
     @Override
