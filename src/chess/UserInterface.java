@@ -123,13 +123,7 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
                         (j + 1) * 64, (k + 1) * 64, this);
             }
         }
-        /*g.setColor(Color.BLUE);
-        g.fillRect(x-20, y-20, 40, 40);
-        g.setColor(new Color(190,81,215));
-        g.fillRect(40, 20, 80, 50);
-        g.drawString("Jonathan", x, y);
-        */
-        
+
         // Start the SwingWorker for rendering
         renderWorker.execute();
     }
