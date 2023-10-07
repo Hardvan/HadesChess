@@ -1,3 +1,5 @@
+package chess;
+
 public class Rating {
     static int[][] pawnBoard = {//attribute to http://chessprogramming.wikispaces.com/Simplified+evaluation+function
             {0, 0, 0, 0, 0, 0, 0, 0},
