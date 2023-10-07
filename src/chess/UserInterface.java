@@ -8,6 +8,26 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
     static int mouseX, mouseY, newMouseX, newMouseY;
     static int squareSize = 64;
 
+    // Declare a SwingWorker for rendering
+    private SwingWorker<Void, Void> renderWorker;
+
+    public UserInterface() {
+
+        // Create a SwingWorker for rendering
+        renderWorker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                // Repaint the GUI after rendering is complete
+                repaint();
+            }
+        };
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -109,6 +129,9 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
         g.fillRect(40, 20, 80, 50);
         g.drawString("Jonathan", x, y);
         */
+        
+        // Start the SwingWorker for rendering
+        renderWorker.execute();
     }
 
     @Override
