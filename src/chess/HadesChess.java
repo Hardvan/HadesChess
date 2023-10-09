@@ -1,7 +1,9 @@
 package chess;
 
-import java.util.*;
-import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import javax.swing.JOptionPane;
+import javax.swing.JFrame;
 
 /*
  * Naming convention:
@@ -13,6 +15,8 @@ import javax.swing.*;
  * Queen = Q/q
  * King = A/a
 
+ * Squares: 0 to 63
+
  * Strategy: Create an alpha-beta tree diagram which returns the best outcome
 
  * (1234b represents row1, column2 moves to row3, column4 which captured
@@ -21,6 +25,7 @@ import javax.swing.*;
 
 public class HadesChess {
 
+    // * Attributes
     // 2D array of Strings representing the chess board
     static String[][] chessBoard = {
             {"r", "k", "b", "q", "a", "b", "k", "r"},
@@ -37,12 +42,15 @@ public class HadesChess {
     static int humanAsWhite = -1; // 1 = human as white, 0 = human as black
     static int globalDepth = 4; // depth of the alpha-beta tree
 
+    // * Methods
     public static void main(String[] args) {
-        // Get King's location
+
+        // White king location
         while (!"A".equals(chessBoard[kingPositionC / 8][kingPositionC % 8])) {
             kingPositionC++;
         }
-        // Get King's location
+
+        // Black king location
         while (!"a".equals(chessBoard[kingPositionL / 8][kingPositionL % 8])) {
             kingPositionL++;
         }
@@ -50,7 +58,10 @@ public class HadesChess {
         // Create the GUI window
         JFrame frame = new JFrame("Hades Chess");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // * UserInterface object created from the UserInterface class (in another file)
         UserInterface ui = new UserInterface();
+
         frame.add(ui);
         frame.setSize(1000, 1000); // 1000x1000 pixel window
         frame.setLocationRelativeTo(null); // center the window
@@ -59,18 +70,19 @@ public class HadesChess {
         System.out.println(sortMoves(possibleMoves())); // print out the possible moves
 
         // Ask the user if they want to play as white or black
-        Object[] option = {"Computer", "Human"}; // options for the JOptionPane
-        humanAsWhite = JOptionPane.showOptionDialog(null, "Who should play as white?",
-                "ABC Options", JOptionPane.YES_NO_OPTION,
+        Object[] option = {"Computer", "Human"};
+        humanAsWhite = JOptionPane.showOptionDialog(null, "Who should play first?",
+                "Choose Player", JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, option, option[1]);
-        // If the user chooses to play as black, make the first move
+
+        System.out.println("humanAsWhite = " + humanAsWhite);
+
+        // User as black, comp makes first move
         if (humanAsWhite == 0) {
-            long startTime = System.currentTimeMillis(); // start the timer
-
             // Make the move by calling the alphaBeta function
+            long startTime = System.currentTimeMillis();
             makeMove(alphaBeta(globalDepth, 1000000, -1000000, "", 0));
-
-            long endTime = System.currentTimeMillis(); // end the timer
+            long endTime = System.currentTimeMillis();
             System.out.println("That took " + (endTime - startTime) + " milliseconds"); // print out the time it took
 
             // Flip the board and repaint the GUI
@@ -93,7 +105,7 @@ public class HadesChess {
         String list = possibleMoves(); // get the list of possible moves
 
         // If no moves are possible or the depth is 0, return the move and the rating
-        if (depth == 0 || list.length() == 0) {
+        if (depth == 0 || list.isEmpty()) {
             return move + (Rating.rating(list.length(), depth) * (player * 2 - 1));
         }
 
@@ -107,11 +119,12 @@ public class HadesChess {
 
             // Recursively call the alphaBeta function to get the rating
             String returnString = alphaBeta(depth - 1, beta, alpha, list.substring(i, i + 5), player);
-            int value = Integer.valueOf(returnString.substring(5)); // get the rating
+            int value = Integer.parseInt(returnString.substring(5)); // get the rating
 
             flipBoard();
             undoMove(list.substring(i, i + 5)); // undo the move
 
+            // Minimizing player
             // If the rating is less than beta, set beta to the rating
             if (player == 0) {
                 if (value <= beta) {
@@ -122,6 +135,8 @@ public class HadesChess {
                     }
                 }
             }
+
+            // Maximizing player
             // If the rating is greater than alpha, set alpha to the rating
             else {
                 if (value > alpha) {
@@ -153,12 +168,14 @@ public class HadesChess {
         // Loop through the chess board
         for (int i = 0; i < 32; i++) {
             int r = i / 8, c = i % 8;
+
             // Turn uppercase to lowercase and vice versa
             if (Character.isUpperCase(chessBoard[r][c].charAt(0))) {
                 temp = chessBoard[r][c].toLowerCase();
             } else {
                 temp = chessBoard[r][c].toUpperCase();
             }
+
             // Swap the pieces
             if (Character.isUpperCase(chessBoard[7 - r][7 - c].charAt(0))) {
                 chessBoard[r][c] = chessBoard[7 - r][7 - c].toLowerCase();
@@ -175,71 +192,85 @@ public class HadesChess {
     }
 
     public static void makeMove(String move) {
-
+        // if not pawn promotion
         if (move.charAt(4) != 'P') {
-            chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))] = chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))];
-            chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))] = " ";
-            if ("A".equals(chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))])) {
-                kingPositionC = 8 * Character.getNumericValue(move.charAt(2)) + Character.getNumericValue(move.charAt(3));
+            int new_row = Character.getNumericValue(move.charAt(2));
+            int new_col = Character.getNumericValue(move.charAt(3));
+            int old_row = Character.getNumericValue(move.charAt(0));
+            int old_col = Character.getNumericValue(move.charAt(1));
+            chessBoard[new_row][new_col] = chessBoard[old_row][old_col];
+            chessBoard[old_row][old_col] = " ";
+            if ("A".equals(chessBoard[new_row][new_col])) {
+                kingPositionC = 8 * new_row + new_col;
             }
-        } else {
-            // if pawn promotion
+        }
+        // if pawn promotion
+        else {
             chessBoard[1][Character.getNumericValue(move.charAt(0))] = " ";
             chessBoard[0][Character.getNumericValue(move.charAt(1))] = String.valueOf(move.charAt(3));
         }
     }
 
     public static void undoMove(String move) {
+        // if not pawn promotion
         if (move.charAt(4) != 'P') {
             chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))] = chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))];
             chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))] = String.valueOf(move.charAt(4));
             if ("A".equals(chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))])) {
                 kingPositionC = 8 * Character.getNumericValue(move.charAt(0)) + Character.getNumericValue(move.charAt(1));
             }
-        } else {
-            // if pawn promotion
+        }
+        // if pawn promotion
+        else {
             chessBoard[1][Character.getNumericValue(move.charAt(0))] = "P";
             chessBoard[0][Character.getNumericValue(move.charAt(1))] = String.valueOf(move.charAt(2));
         }
     }
 
     public static String possibleMoves() {
-        StringBuilder list = new StringBuilder();
+        ArrayList<String> list = new ArrayList<>(); // ArrayList Collections framework
 
         // Loop through the chess board
         for (int i = 0; i < 64; i++) {
             // Switch statement for each piece
             switch (chessBoard[i / 8][i % 8]) {
                 case "P":
-                    list.append(possibleP(i));
+                    list.add(possibleP(i));
                     break;
                 case "R":
-                    list.append(possibleR(i));
+                    list.add(possibleR(i));
                     break;
                 case "K":
-                    list.append(possibleK(i));
+                    list.add(possibleK(i));
                     break;
                 case "B":
-                    list.append(possibleB(i));
+                    list.add(possibleB(i));
                     break;
                 case "Q":
-                    list.append(possibleQ(i));
+                    list.add(possibleQ(i));
                     break;
                 case "A":
-                    list.append(possibleA(i));
+                    list.add(possibleA(i));
                     break;
             }
         }
 
-        return list.toString(); // x1,y1,x2,y2,captured piece
+        String listString = "";
+        for (String s : list) {
+            listString += s;
+        }
+
+        return listString; // x1,y1,x2,y2,captured piece
     }
 
     public static String possibleP(int i) {
         String list = "", oldPiece;
         int r = i / 8, c = i % 8; // row and column
+
         // Loop through the possible captures
         for (int j = -1; j <= 1; j += 2) {
-            try {//capture
+            try {
+                // capture
                 if (Character.isLowerCase(chessBoard[r - 1][c + j].charAt(0)) && i >= 16) {
                     oldPiece = chessBoard[r - 1][c + j];
                     chessBoard[r][c] = " ";
@@ -252,7 +283,8 @@ public class HadesChess {
                 }
             } catch (Exception e) {
             }
-            try {//promotion && capture
+            try {
+                // promotion && capture
                 if (Character.isLowerCase(chessBoard[r - 1][c + j].charAt(0)) && i < 16) {
                     String[] temp = {"Q", "R", "B", "K"};
                     for (int k = 0; k < 4; k++) {
@@ -270,7 +302,8 @@ public class HadesChess {
             } catch (Exception e) {
             }
         }
-        try {//move one up
+        try {
+            // move one up
             if (" ".equals(chessBoard[r - 1][c]) && i >= 16) {
                 oldPiece = chessBoard[r - 1][c];
                 chessBoard[r][c] = " ";
@@ -283,7 +316,8 @@ public class HadesChess {
             }
         } catch (Exception e) {
         }
-        try {//promotion && no capture
+        try {
+            // promotion && no capture
             if (" ".equals(chessBoard[r - 1][c]) && i < 16) {
                 String[] temp = {"Q", "R", "B", "K"};
                 for (int k = 0; k < 4; k++) {
@@ -291,7 +325,7 @@ public class HadesChess {
                     chessBoard[r][c] = " ";
                     chessBoard[r - 1][c] = temp[k];
                     if (kingSafe()) {
-                        //column1,column2,captured-piece,new-piece,P
+                        // column1,column2,captured-piece,new-piece,P
                         list = list + c + c + oldPiece + temp[k] + "P";
                     }
                     chessBoard[r][c] = "P";
@@ -300,7 +334,8 @@ public class HadesChess {
             }
         } catch (Exception e) {
         }
-        try {//move two up
+        try {
+            // move two up
             if (" ".equals(chessBoard[r - 1][c]) && " ".equals(chessBoard[r - 2][c]) && i >= 48) {
                 oldPiece = chessBoard[r - 2][c];
                 chessBoard[r][c] = " ";
@@ -506,7 +541,6 @@ public class HadesChess {
                 }
             }
         }
-        //need to add casting later
         return list;
     }
 

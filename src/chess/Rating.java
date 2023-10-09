@@ -1,7 +1,20 @@
 package chess;
 
-public class Rating {
-    static int[][] pawnBoard = {//attribute to http://chessprogramming.wikispaces.com/Simplified+evaluation+function
+// attribute to https://www.chessprogramming.org/Simplified_Evaluation_Function
+
+interface Rater {
+    int rateMaterial();
+
+    int rateAttack();
+
+    int rateMovablitly(int listLength, int depth, int material);
+
+    int ratePositional(int material);
+}
+
+public class Rating implements Rater {
+    // Encourage the pawns to advance
+    static int[][] pawnBoard = {
             {0, 0, 0, 0, 0, 0, 0, 0},
             {50, 50, 50, 50, 50, 50, 50, 50},
             {10, 10, 20, 30, 30, 20, 10, 10},
@@ -10,6 +23,8 @@ public class Rating {
             {5, -5, -10, 0, 0, -10, -5, 5},
             {5, 10, 10, -20, -20, 10, 10, 5},
             {0, 0, 0, 0, 0, 0, 0, 0}};
+
+    // Occupy the 7th rank and avoid a, h columns
     static int[][] rookBoard = {
             {0, 0, 0, 0, 0, 0, 0, 0},
             {5, 10, 10, 10, 10, 10, 10, 5},
@@ -19,6 +34,8 @@ public class Rating {
             {-5, 0, 0, 0, 0, 0, 0, -5},
             {-5, 0, 0, 0, 0, 0, 0, -5},
             {0, 0, 0, 5, 5, 0, 0, 0}};
+
+    // With knights, we simply encourage them to go to the center. Standing on the edge is a bad idea.
     static int[][] knightBoard = {
             {-50, -40, -30, -30, -30, -30, -40, -50},
             {-40, -20, 0, 0, 0, 0, -20, -40},
@@ -28,6 +45,8 @@ public class Rating {
             {-30, 5, 10, 15, 15, 10, 5, -30},
             {-40, -20, 0, 5, 5, 0, -20, -40},
             {-50, -40, -30, -30, -30, -30, -40, -50}};
+
+    // We avoid corners and borders. Additionally, we prefer squares like b3, c4, b5, d3 and the central ones.
     static int[][] bishopBoard = {
             {-20, -10, -10, -10, -10, -10, -10, -20},
             {-10, 0, 0, 0, 0, 0, 0, -10},
@@ -66,22 +85,64 @@ public class Rating {
             {-50, -30, -30, -30, -30, -30, -30, -50}};
 
     public static int rating(int list, int depth) {
-        int counter = 0, material = rateMaterial();
-        counter += rateAttack();
+
+        Rating r = new Rating();
+
+        int counter = 0;
+
+        int material = r.rateMaterial();
+        counter += r.rateAttack();
         counter += material;
-        counter += rateMovablitly(list, depth, material);
-        counter += ratePositional(material);
+        counter += r.rateMovablitly(list, depth, material);
+        counter += r.ratePositional(material);
+
         HadesChess.flipBoard();
-        material = rateMaterial();
-        counter -= rateAttack();
+
+        material = r.rateMaterial();
+        counter -= r.rateAttack();
         counter -= material;
-        counter -= rateMovablitly(list, depth, material);
-        counter -= ratePositional(material);
+        counter -= r.rateMovablitly(list, depth, material);
+        counter -= r.ratePositional(material);
+
         HadesChess.flipBoard();
+
         return -(counter + depth * 50);
     }
 
-    public static int rateAttack() {
+    @Override
+    public int rateMaterial() {
+        int counter = 0, bishopCounter = 0;
+        for (int i = 0; i < 64; i++) {
+            switch (HadesChess.chessBoard[i / 8][i % 8]) {
+                case "P":
+                    counter += 100;
+                    break;
+                case "R":
+                    counter += 500;
+                    break;
+                case "K":
+                    counter += 300;
+                    break;
+                case "B":
+                    bishopCounter += 1;
+                    break;
+                case "Q":
+                    counter += 900;
+                    break;
+            }
+        }
+        if (bishopCounter >= 2) {
+            counter += 300 * bishopCounter;
+        } else if (bishopCounter == 1) {
+            counter += 250;
+        }
+
+        return counter;
+    }
+
+
+    @Override
+    public int rateAttack() {
         int counter = 0;
         int tempPositionC = HadesChess.kingPositionC;
         for (int i = 0; i < 64; i++) {
@@ -123,51 +184,25 @@ public class Rating {
         return counter / 2;
     }
 
-    public static int rateMaterial() {
-        int counter = 0, bishopCounter = 0;
-        for (int i = 0; i < 64; i++) {
-            switch (HadesChess.chessBoard[i / 8][i % 8]) {
-                case "P":
-                    counter += 100;
-                    break;
-                case "R":
-                    counter += 500;
-                    break;
-                case "K":
-                    counter += 300;
-                    break;
-                case "B":
-                    bishopCounter += 1;
-                    break;
-                case "Q":
-                    counter += 900;
-                    break;
-            }
-        }
-        if (bishopCounter >= 2) {
-            counter += 300 * bishopCounter;
-        } else {
-            if (bishopCounter == 1) {
-                counter += 250;
-            }
-        }
-        return counter;
-    }
 
-    public static int rateMovablitly(int listLength, int depth, int material) {
+    @Override
+    public int rateMovablitly(int listLength, int depth, int material) {
         int counter = 0;
-        counter += listLength;//5 pointer per valid move
-        if (listLength == 0) {//current side is in checkmate or stalemate
-            if (!HadesChess.kingSafe()) {//if checkmate
+        counter += listLength; // 5 points per valid move
+        if (listLength == 0) { // current side is in checkmate or stalemate
+            if (!HadesChess.kingSafe()) { // if checkmate
                 counter += -200000 * depth;
-            } else {//if stalemate
+            } else { // if stalemate
                 counter += -150000 * depth;
             }
         }
-        return 0;
+
+        return counter; // return 0;
     }
 
-    public static int ratePositional(int material) {
+
+    @Override
+    public int ratePositional(int material) {
         int counter = 0;
         for (int i = 0; i < 64; i++) {
             switch (HadesChess.chessBoard[i / 8][i % 8]) {

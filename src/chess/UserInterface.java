@@ -1,12 +1,35 @@
 package chess;
 
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
+import javax.swing.ImageIcon;
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
+
 
 public class UserInterface extends JPanel implements MouseListener, MouseMotionListener {
     static int mouseX, mouseY, newMouseX, newMouseY;
     static int squareSize = 64;
+
+    // Declare a SwingWorker for rendering
+    private SwingWorker<Void, Void> renderWorker;
+
+    public UserInterface() {
+
+        // Create a SwingWorker for rendering
+        renderWorker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                // Repaint the GUI after rendering is complete
+                repaint();
+            }
+        };
+    }
 
     @Override
     public void paintComponent(Graphics g) {
@@ -37,6 +60,8 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
             g.setColor(new Color(150, 50, 30));
             g.fillRect(x2, y2, squareSize, squareSize);
         }
+
+        // Draw the chess pieces
         Image chessPiecesImage;
         chessPiecesImage = new ImageIcon("ChessPieces.png").getImage();
         for (int i = 0; i < 64; i++) {
@@ -103,12 +128,9 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
                         (j + 1) * 64, (k + 1) * 64, this);
             }
         }
-        /*g.setColor(Color.BLUE);
-        g.fillRect(x-20, y-20, 40, 40);
-        g.setColor(new Color(190,81,215));
-        g.fillRect(40, 20, 80, 50);
-        g.drawString("Jonathan", x, y);
-        */
+
+        // Start the SwingWorker for rendering
+        renderWorker.execute();
     }
 
     @Override
@@ -122,7 +144,6 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 
         // if inside the board
         if (e.getX() < 8 * squareSize + xOffset && e.getY() < 8 * squareSize + yOffset) {
-
             mouseX = e.getX() - xOffset;
             mouseY = e.getY() - yOffset;
             repaint();
@@ -136,18 +157,10 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 
         // if inside the board
         if (e.getX() < 8 * squareSize + xOffset && e.getY() < 8 * squareSize + yOffset) {
-
             newMouseX = e.getX() - xOffset;
             newMouseY = e.getY() - yOffset;
             if (e.getButton() == MouseEvent.BUTTON1) {
-                String dragMove;
-                if (newMouseY / squareSize == 0 && mouseY / squareSize == 1 && "P".equals(HadesChess.chessBoard[mouseY / squareSize][mouseX / squareSize])) {
-                    //pawn promotion
-                    dragMove = String.valueOf(mouseX / squareSize) + newMouseX / squareSize + HadesChess.chessBoard[newMouseY / squareSize][newMouseX / squareSize] + "QP";
-                } else {
-                    //regular move
-                    dragMove = String.valueOf(mouseY / squareSize) + mouseX / squareSize + newMouseY / squareSize + newMouseX / squareSize + HadesChess.chessBoard[newMouseY / squareSize][newMouseX / squareSize];
-                }
+                String dragMove = getDragMove();
                 String userPossibilities = HadesChess.possibleMoves();
                 if (userPossibilities.replaceAll(dragMove, "").length() < userPossibilities.length()) {
                     //if valid move
@@ -159,6 +172,19 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
                 }
             }
         }
+    }
+
+    private static String getDragMove() {
+        String dragMove;
+        if (newMouseY / squareSize == 0 && mouseY / squareSize == 1 &&
+                "P".equals(HadesChess.chessBoard[mouseY / squareSize][mouseX / squareSize])) {
+            //pawn promotion
+            dragMove = String.valueOf(mouseX / squareSize) + newMouseX / squareSize + HadesChess.chessBoard[newMouseY / squareSize][newMouseX / squareSize] + "QP";
+        } else {
+            //regular move
+            dragMove = String.valueOf(mouseY / squareSize) + mouseX / squareSize + newMouseY / squareSize + newMouseX / squareSize + HadesChess.chessBoard[newMouseY / squareSize][newMouseX / squareSize];
+        }
+        return dragMove;
     }
 
     @Override
