@@ -1,8 +1,11 @@
 package chess;
 
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
+import javax.swing.ImageIcon;
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
+
 
 public class UserInterface extends JPanel implements MouseListener, MouseMotionListener {
     static int mouseX, mouseY, newMouseX, newMouseY;
@@ -57,6 +60,8 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
             g.setColor(new Color(150, 50, 30));
             g.fillRect(x2, y2, squareSize, squareSize);
         }
+
+        // Draw the chess pieces
         Image chessPiecesImage;
         chessPiecesImage = new ImageIcon("ChessPieces.png").getImage();
         for (int i = 0; i < 64; i++) {
@@ -139,7 +144,6 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 
         // if inside the board
         if (e.getX() < 8 * squareSize + xOffset && e.getY() < 8 * squareSize + yOffset) {
-
             mouseX = e.getX() - xOffset;
             mouseY = e.getY() - yOffset;
             repaint();
@@ -153,7 +157,6 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 
         // if inside the board
         if (e.getX() < 8 * squareSize + xOffset && e.getY() < 8 * squareSize + yOffset) {
-
             newMouseX = e.getX() - xOffset;
             newMouseY = e.getY() - yOffset;
             if (e.getButton() == MouseEvent.BUTTON1) {

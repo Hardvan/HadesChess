@@ -188,7 +188,7 @@ public class Rating implements Rater {
     @Override
     public int rateMovablitly(int listLength, int depth, int material) {
         int counter = 0;
-        counter += listLength; // 5 pointer per valid move
+        counter += listLength; // 5 points per valid move
         if (listLength == 0) { // current side is in checkmate or stalemate
             if (!HadesChess.kingSafe()) { // if checkmate
                 counter += -200000 * depth;
